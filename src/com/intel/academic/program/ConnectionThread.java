@@ -21,10 +21,6 @@ public class ConnectionThread extends Thread{
 	 */
 	private int portRemote;
 	/**
-	 * A reference on the Server instance. This variable is used for thread synchronization.
-	 */
-	private Server server;
-	/**
 	 * The server socket used for creating the drone socket connection.
 	 */
 	private ServerSocket serverSocketDrone = null;
@@ -40,10 +36,9 @@ public class ConnectionThread extends Thread{
 	 * @param server A reference on the server.
 	 * @param ident A string used to identify this specific instance of the class. You can use what ever you want.
 	 */
-	public ConnectionThread(int portDrone, int portRemote, Server server, String ident) {
+	public ConnectionThread(int portDrone, int portRemote, String ident) {
 		this.portDrone = portDrone;
 		this.portRemote = portRemote;
-		this.server = server;
 		this.identifier = ident;
 	}
 
@@ -73,6 +68,7 @@ public class ConnectionThread extends Thread{
 						 * to detect that something went wrong.
 						 */
 						socket = serverSocket.accept();
+						System.out.println("Incoming connection from IP : "+socket.getRemoteSocketAddress());
 						readerC.setReader(null);
 						writerC.setWriter(null);
 						if(oldSocket != null)
