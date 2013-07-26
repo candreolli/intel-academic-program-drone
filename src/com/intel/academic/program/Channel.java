@@ -15,6 +15,11 @@ public class Channel extends Thread{
 	 */
 	private InputStream reader = null;
 	/**
+	 * Indicates wheter or not this channel must register a JPEG.
+	 */
+	private boolean registerJPEG = false;
+
+	/**
 	 * The output stream used to write the data.
 	 */
 	private OutputStream writer = null;
@@ -24,8 +29,10 @@ public class Channel extends Thread{
 	 * To use this objet, you must set the reader and the writer by calling :
 	 * setReader(InputStream reader)
 	 * setWriter(OutputStream writer)
+	 * @param registerJPEG
 	 */
-	public Channel() {
+	public Channel(boolean registerJPEG) {
+		this.setRegisterJPEG(registerJPEG);
 	}
 
 	/**
@@ -46,9 +53,17 @@ public class Channel extends Thread{
 
 
 
+	/**
+	 * @return the registerJPEG
+	 */
+	public boolean isRegisterJPEG() {
+		return this.registerJPEG;
+	}
+
 	@Override
 	public void run() {
 		super.run();
+		StateMachine stateMachine = new StateMachine();
 		while(true){
 			/*
 			 * If the reader or the writer are not correctly set, the tunnel can be
@@ -78,11 +93,14 @@ public class Channel extends Thread{
 							int totalRead = this.reader.read(buffer, buffer.length - numberToRead, numberToRead);
 							numberToRead -= totalRead;
 						}
+						if(this.registerJPEG)
+							stateMachine.recordStep(buffer);
 						this.writer.write(buffer);
 						this.writer.flush();
 
 					}
 				} catch (Exception e) {
+					stateMachine = new StateMachine();
 					System.out.println("Exception in the channel : "+e.getMessage());
 				}
 			}
@@ -96,6 +114,13 @@ public class Channel extends Thread{
 	public synchronized void setReader(InputStream reader) {
 		this.reader = reader;
 		this.notifyAll();
+	}
+
+	/**
+	 * @param registerJPEG the registerJPEG to set
+	 */
+	public void setRegisterJPEG(boolean registerJPEG) {
+		this.registerJPEG = registerJPEG;
 	}
 
 	/**

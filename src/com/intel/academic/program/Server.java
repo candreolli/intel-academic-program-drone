@@ -56,8 +56,8 @@ public class Server {
 	public void connect() throws IOException{
 		System.out.println("Trying to connect");
 
-		this.videoThread = new ConnectionThread(this.portVideoDrone, this.portVideoRemote, "video");
-		this.commandThread = new ConnectionThread(this.portCommandDrone, this.portCommandRemote, "command");
+		this.videoThread = new ConnectionThread(this.portVideoDrone, this.portVideoRemote, "video", true);
+		this.commandThread = new ConnectionThread(this.portCommandDrone, this.portCommandRemote, "command", false);
 
 		this.videoThread.start();
 		this.commandThread.start();

@@ -1,6 +1,7 @@
 package com.intel.academic.program;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Date;
 
 /**
  * Represents a tunnel connection between a remote and the drone server.
@@ -21,6 +22,10 @@ public class ConnectionThread extends Thread{
 	 */
 	private int portRemote;
 	/**
+	 * Indicates whether or not we need to register the JPEG
+	 */
+	private boolean registerJPEG = false;
+	/**
 	 * The server socket used for creating the drone socket connection.
 	 */
 	private ServerSocket serverSocketDrone = null;
@@ -36,10 +41,11 @@ public class ConnectionThread extends Thread{
 	 * @param server A reference on the server.
 	 * @param ident A string used to identify this specific instance of the class. You can use what ever you want.
 	 */
-	public ConnectionThread(int portDrone, int portRemote, String ident) {
+	public ConnectionThread(int portDrone, int portRemote, String ident, boolean registerJPEG) {
 		this.portDrone = portDrone;
 		this.portRemote = portRemote;
 		this.identifier = ident;
+		this.setRegisterJPEG(registerJPEG);
 	}
 
 	/**
@@ -56,19 +62,19 @@ public class ConnectionThread extends Thread{
 
 			@Override
 			public void run() {
-				System.out.println("Connect Socket called... : "+ConnectionThread.this.identifier);
+				System.out.println(new Date()+" : Connect Socket called... : "+ConnectionThread.this.identifier);
 				Socket socket;
 				Socket oldSocket = null;
 				while(true){
 					try {
-						System.out.println("ServerSocket.accept() : "+ConnectionThread.this.identifier);
+						System.out.println(new Date()+" : ServerSocket.accept() : "+ConnectionThread.this.identifier);
 						/*
 						 * When we accept a new connection, we must set to null the streams used by the channel
 						 * to communicate. If a socket already exist, it's important to close it. This allows the channels
 						 * to detect that something went wrong.
 						 */
 						socket = serverSocket.accept();
-						System.out.println("Incoming connection from IP : "+socket.getRemoteSocketAddress());
+						System.out.println(new Date()+" : Incoming connection from IP : "+socket.getRemoteSocketAddress());
 						readerC.setReader(null);
 						writerC.setWriter(null);
 						if(oldSocket != null)
@@ -82,15 +88,22 @@ public class ConnectionThread extends Thread{
 						//We need to remember the reference of the current socket to close it
 						//if a new connection occurs.
 						oldSocket = socket;
-						System.out.println("ConnectSocket is OK... :  "+ConnectionThread.this.identifier);
+						System.out.println(new Date()+" : ConnectSocket is OK... :  "+ConnectionThread.this.identifier);
 					} catch (Exception e) {
-						System.err.println(e.getMessage()+" :  "+ConnectionThread.this.identifier);
+						System.err.println(new Date()+" : "+e.getMessage()+" :  "+ConnectionThread.this.identifier);
 					}
 				}
 			}
 		});
 		t.start();
 
+	}
+
+	/**
+	 * @return the registerJPEG
+	 */
+	public boolean isRegisterJPEG() {
+		return this.registerJPEG;
 	}
 
 	@Override
@@ -100,13 +113,13 @@ public class ConnectionThread extends Thread{
 			/*
 			 * We need to create 2 channels to be able to communicate in 2 directions through the tunnel.
 			 */
-			final Channel dToR = new Channel();
-			final Channel rToD = new Channel();
+			final Channel dToR = new Channel(this.registerJPEG);
+			final Channel rToD = new Channel(false);
 
 			this.serverSocketDrone = new ServerSocket(this.portDrone);
 			this.serverSocketDrone.setReuseAddress(true);
 			this.serverSocketRemote = new ServerSocket(this.portRemote);
-			this.serverSocketRemote.setReuseAddress(true);;
+			this.serverSocketRemote.setReuseAddress(true);
 			/**
 			 * Then we can start the channel and set them up later.
 			 */
@@ -120,8 +133,15 @@ public class ConnectionThread extends Thread{
 			ConnectionThread.this.connectSocket(rToD, dToR, ConnectionThread.this.serverSocketRemote, ConnectionThread.this.portRemote);
 
 		} catch (Exception e) {
-			System.out.println("Exception "+e.getMessage()+" : "+this.identifier);
+			System.out.println(new Date()+" : Exception "+e.getMessage()+" : "+this.identifier);
 		}
+	}
+
+	/**
+	 * @param registerJPEG the registerJPEG to set
+	 */
+	public void setRegisterJPEG(boolean registerJPEG) {
+		this.registerJPEG = registerJPEG;
 	}
 
 }
