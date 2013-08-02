@@ -15,7 +15,7 @@ public class StateSize implements StateLike{
 	@Override
 	public void recordStep(StateMachine stateMachine, byte[] buffer) {
 		try {
-			OutputStream os = new FileOutputStream(new File("/etc/droneserver/"+StateMachine.fileName+round+".jpeg"));
+			OutputStream os = new FileOutputStream(new File("/etc/droneserver/"+"flight_"+StateMachine.getFlightNumber()+"_"+StateMachine.fileName+round+".jpeg"));
 			stateMachine.setOutputFileStream(os);
 			String str = new String(buffer, "UTF-8").replace("\n", "");
 			int size = Integer.parseInt(str);

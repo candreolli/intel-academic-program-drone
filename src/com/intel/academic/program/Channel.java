@@ -63,7 +63,12 @@ public class Channel extends Thread{
 	@Override
 	public void run() {
 		super.run();
-		StateMachine stateMachine = new StateMachine();
+
+		int flightNumber = 0;
+		StateMachine stateMachine = null;
+		if(this.registerJPEG)
+			stateMachine = new StateMachine(flightNumber++);
+
 		while(true){
 			/*
 			 * If the reader or the writer are not correctly set, the tunnel can be
@@ -100,7 +105,11 @@ public class Channel extends Thread{
 
 					}
 				} catch (Exception e) {
-					stateMachine = new StateMachine();
+					StateMachine.incrementFlightNumber();
+
+					if(this.registerJPEG){
+						stateMachine = new StateMachine(flightNumber++);
+					}
 					System.out.println("Exception in the channel : "+e.getMessage());
 				}
 			}

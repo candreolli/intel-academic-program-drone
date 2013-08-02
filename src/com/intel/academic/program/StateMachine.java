@@ -8,21 +8,38 @@ public class StateMachine {
 	 */
 	public final static String fileName = "drone_server_";
 	/**
+	 * The flight number. This one is used to save the pictures off all the flights.
+	 */
+	private static int flightNumber;
+	public static synchronized int getFlightNumber() {
+		return StateMachine.flightNumber;
+	}
+	public static synchronized void incrementFlightNumber() {
+		StateMachine.flightNumber++;
+	}
+	public static synchronized void setFlightNumber(int flightNumber) {
+		StateMachine.flightNumber = flightNumber;
+	}
+	/**
 	 * Represents the current state.
 	 */
 	private StateLike currentState = null;
+
 	/**
 	 * Height of the image.
 	 */
 	private int height;
+
 	/**
 	 * The output stream used to write data.
 	 */
 	private OutputStream outputFileStream = null;
+
 	/**
 	 * The size of the file.
 	 */
 	private int size;
+
 	/**
 	 * The width of the image.
 	 */
@@ -33,6 +50,15 @@ public class StateMachine {
 	 */
 	public StateMachine(){
 		this.setCurrentState(new StateSize());
+	}
+
+	/**
+	 * Constructor that takes
+	 * @param flightNumber
+	 */
+	public StateMachine(int flightNumber) {
+		this.setCurrentState(new StateSize());
+		setFlightNumber(flightNumber);
 	}
 
 	/**
@@ -109,7 +135,6 @@ public class StateMachine {
 	public void setSize(int size) {
 		this.size = size;
 	}
-
 	/**
 	 * @param width the width to set
 	 */
